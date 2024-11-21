@@ -6,6 +6,7 @@ import jade.core.AID;
 
 public class PatrollingAgent extends BaseAgent {
     private double radius = 100, angle = 0;
+    private boolean targetIntercepted = false; // Flag to check if target has been intercepted
 
     @Override
     protected void initPosition() {
@@ -33,6 +34,15 @@ public class PatrollingAgent extends BaseAgent {
                 msg.addReceiver(new AID("Interceptor", AID.ISLOCALNAME)); // Send to InterceptorAgent
                 msg.setContent("Position: (" + x + ", " + y + "), Fuel Level: " + fuelLevel);
                 send(msg);
+                // SEND MESSAGE TO interceptor about a target position
+            // Send target coordinates to Interceptor if not intercepted
+            if (!targetIntercepted) {
+                ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                msg2.addReceiver(new AID("Interceptor", AID.ISLOCALNAME)); // Send to InterceptorAgent
+                msg2.setContent("New Target Coordinates: (" + 100 + ", " + 200 + ")");
+                send(msg2);
+            }
+
     
                 System.out.println(getLocalName() + " is patrolling at (" + x + ", " + y + ") with fuel level: " + fuelLevel);
                }
@@ -48,8 +58,14 @@ public class PatrollingAgent extends BaseAgent {
             ACLMessage msg = receive();
             if (msg != null) {
                 System.out.println(getLocalName() + " received info: " + msg.getContent());
-                // Additional processing based on the received message
-                // Example: Respond with a confirmation
+    
+                // If the message is about interception, stop sending target coordinates
+                if (msg.getContent().equals("Interceptor has intercepted the target")) {
+                    targetIntercepted = true; // Stop sending target coordinates
+                    System.out.println(getLocalName() + " received interception confirmation. Stopping target updates.");
+                }
+    
+                // Respond with a confirmation
                 ACLMessage reply = msg.createReply();
                 reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setContent("Received your position update.");
