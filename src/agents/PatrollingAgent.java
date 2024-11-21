@@ -6,8 +6,8 @@ import jade.core.AID;
 
 public class PatrollingAgent extends BaseAgent {
     private double radius = 100, angle = 0;
-    private boolean targetIntercepted = false; // Flag to check if target has been intercepted
-
+    private double targetIntercepted = 0; // Flag to check if target has been intercepted
+    private double avgSpeed = 10; // Average speed of the agent
     @Override
     protected void initPosition() {
         x = 400;
@@ -20,6 +20,7 @@ public class PatrollingAgent extends BaseAgent {
         addBehaviour(new TickerBehaviour(this, 1000) {
             @Override
             protected void onTick() {
+                consumeFuel(avgSpeed);
                 if (isLowFuel()) {
                     System.out.println(getLocalName() + " is stopping due to low fuel.");
                     return;  // Stop movement if fuel is low
@@ -36,7 +37,7 @@ public class PatrollingAgent extends BaseAgent {
                 send(msg);
                 // SEND MESSAGE TO interceptor about a target position
             // Send target coordinates to Interceptor if not intercepted
-            if (!targetIntercepted) {
+            if (targetIntercepted == 0) {
                 ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                 msg2.addReceiver(new AID("Interceptor", AID.ISLOCALNAME)); // Send to InterceptorAgent
                 msg2.setContent("New Target Coordinates: (" + 100 + ", " + 200 + ")");
@@ -61,7 +62,7 @@ public class PatrollingAgent extends BaseAgent {
     
                 // If the message is about interception, stop sending target coordinates
                 if (msg.getContent().equals("Interceptor has intercepted the target")) {
-                    targetIntercepted = true; // Stop sending target coordinates
+                    targetIntercepted  += 1;
                     System.out.println(getLocalName() + " received interception confirmation. Stopping target updates.");
                 }
     

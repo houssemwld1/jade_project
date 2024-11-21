@@ -5,14 +5,13 @@ import jade.core.Agent;
 public abstract class BaseAgent extends Agent {
     protected double x, y;  // Position of the agent
     protected double fuelLevel;  // Fuel level (range 0 to 100)
-    protected double fuelConsumptionRate;  // Rate at which the agent consumes fuel (e.g., per tick)
+    protected double fuelConsumptionRate = 0.0001;  // Fuel consumed per tick
 
     @Override
     protected void setup() {
         System.out.println(getLocalName() + " is initialized.");
         initPosition();
         fuelLevel = 100.0;  // Initial fuel level
-        fuelConsumptionRate = 1.0;  // Fuel consumed per tick
     }
 
     protected abstract void initPosition();
@@ -20,8 +19,8 @@ public abstract class BaseAgent extends Agent {
     // Abstract method for moving the agent (subclasses will implement)
     // protected abstract void move();
 
-    public void consumeFuel() {
-        fuelLevel -= fuelConsumptionRate;
+    public void consumeFuel(double speed ) {
+        fuelLevel -= fuelConsumptionRate * speed;  // Consume fuel
         if (fuelLevel <= 0) {
             fuelLevel = 0;
             alertLowFuel();  // Alert if fuel is empty
