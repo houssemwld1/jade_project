@@ -4,11 +4,8 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 
 public class InterceptorAgent extends BaseAgent {
-    private BaseAgent target;
-
-    public InterceptorAgent(BaseAgent target) {
-        this.target = target;
-    }
+    private double targetX = 100.0; // Example target coordinates
+    private double targetY = 200.0; // Example target coordinates
 
     @Override
     protected void initPosition() {
@@ -19,23 +16,31 @@ public class InterceptorAgent extends BaseAgent {
     @Override
     protected void setup() {
         super.setup();
+
+        System.out.println(getLocalName() + " targeting coordinates: (" + targetX + ", " + targetY + ")");
+
+        // Add interception behavior
         addBehaviour(new TickerBehaviour(this, 1000) {
             @Override
             protected void onTick() {
-                // Intercept logic based on position and fuel level
-                double dx = target.getX() - x;
-                double dy = target.getY() - y;
-                double distance = Math.sqrt(dx * dx + dy * dy);
+                // Calculate distance to the target
+                double distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
 
-                if (distance > 5) {
-                    x += dx / distance * 5;
-                    y += dy / distance * 5;
+                if (distance < 10) { // Define a threshold distance for interception
+                    System.out.println(getLocalName() + " has intercepted the target at coordinates (" + targetX + ", " + targetY + ")");
+                    consumeFuel(); // Simulate fuel consumption
+                } else {
+                    System.out.println(getLocalName() + " is moving towards target coordinates (" + targetX + ", " + targetY + ")");
                 }
-                System.out.println(getLocalName() + " is intercepting target at (" + x + ", " + y + ")");
+
+                // Send an update message to inform the target coordinates and fuel level
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.setContent("Interceptor position: (" + x + ", " + y + "), Fuel Level: " + fuelLevel);
+                send(msg);
             }
         });
 
-        // Add a behavior to listen for other agents' information
+        // Add behavior to receive messages
         addBehaviour(new ReceiveInfoBehaviour());
     }
 
@@ -46,7 +51,6 @@ public class InterceptorAgent extends BaseAgent {
             ACLMessage msg = receive();
             if (msg != null) {
                 System.out.println(getLocalName() + " received info: " + msg.getContent());
-                // Here you can add logic to process received information, like fuel warnings or target interception.
             } else {
                 block();
             }
