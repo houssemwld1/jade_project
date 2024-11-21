@@ -49,7 +49,6 @@ public class PatrollingAgent extends BaseAgent {
                }
         });
 
-        // Add a behavior to listen for other agents' information
         addBehaviour(new ReceiveInfoBehaviour());
     }
 
@@ -60,13 +59,11 @@ public class PatrollingAgent extends BaseAgent {
             if (msg != null) {
                 System.out.println(getLocalName() + " received info: " + msg.getContent());
     
-                // If the message is about interception, stop sending target coordinates
                 if (msg.getContent().equals("Interceptor has intercepted the target")) {
                     targetIntercepted  += 1;
                     System.out.println(getLocalName() + " received interception confirmation. Stopping target updates.");
                 }
     
-                // Respond with a confirmation
                 ACLMessage reply = msg.createReply();
                 reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setContent("Received your position update.");
